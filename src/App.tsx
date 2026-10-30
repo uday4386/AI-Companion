@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
@@ -7,26 +7,27 @@ import { AdminRoute, ProtectedRoute, PublicOnlyRoute } from '@/components/RouteG
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageLoader } from '@/components/ui/Spinner';
+import { lazyWithRetry } from '@/lib/lazy';
 
-const LoginPage = lazy(() => import('@/pages/auth/Login'));
-const RequestAccessPage = lazy(() => import('@/pages/auth/RequestAccess'));
-const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPassword'));
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPassword'));
-const AcceptInvitationPage = lazy(() => import('@/pages/auth/AcceptInvitation'));
+const LoginPage = lazyWithRetry(() => import('@/pages/auth/Login'));
+const RequestAccessPage = lazyWithRetry(() => import('@/pages/auth/RequestAccess'));
+const ForgotPasswordPage = lazyWithRetry(() => import('@/pages/auth/ForgotPassword'));
+const ResetPasswordPage = lazyWithRetry(() => import('@/pages/auth/ResetPassword'));
+const AcceptInvitationPage = lazyWithRetry(() => import('@/pages/auth/AcceptInvitation'));
 
-const DashboardPage = lazy(() => import('@/pages/Dashboard'));
-const ErrorsListPage = lazy(() => import('@/pages/ErrorsList'));
-const SubmitErrorPage = lazy(() => import('@/pages/SubmitError'));
-const ErrorDetailPage = lazy(() => import('@/pages/ErrorDetail'));
-const AssignmentsPage = lazy(() => import('@/pages/Assignments'));
-const ReportsPage = lazy(() => import('@/pages/Reports'));
-const UsersPage = lazy(() => import('@/pages/Users'));
-const AccessRequestsPage = lazy(() => import('@/pages/AccessRequests'));
-const NotificationsPage = lazy(() => import('@/pages/Notifications'));
-const AuditLogsPage = lazy(() => import('@/pages/AuditLogs'));
-const SettingsPage = lazy(() => import('@/pages/Settings'));
-const ProfilePage = lazy(() => import('@/pages/Profile'));
-const NotFoundPage = lazy(() => import('@/pages/NotFound'));
+const DashboardPage = lazyWithRetry(() => import('@/pages/Dashboard'));
+const ErrorsListPage = lazyWithRetry(() => import('@/pages/ErrorsList'));
+const SubmitErrorPage = lazyWithRetry(() => import('@/pages/SubmitError'));
+const ErrorDetailPage = lazyWithRetry(() => import('@/pages/ErrorDetail'));
+const AssignmentsPage = lazyWithRetry(() => import('@/pages/Assignments'));
+const ReportsPage = lazyWithRetry(() => import('@/pages/Reports'));
+const UsersPage = lazyWithRetry(() => import('@/pages/Users'));
+const AccessRequestsPage = lazyWithRetry(() => import('@/pages/AccessRequests'));
+const NotificationsPage = lazyWithRetry(() => import('@/pages/Notifications'));
+const AuditLogsPage = lazyWithRetry(() => import('@/pages/AuditLogs'));
+const SettingsPage = lazyWithRetry(() => import('@/pages/Settings'));
+const ProfilePage = lazyWithRetry(() => import('@/pages/Profile'));
+const NotFoundPage = lazyWithRetry(() => import('@/pages/NotFound'));
 
 export default function App() {
   return (

@@ -45,18 +45,35 @@ export function destroySession(id) {
   q.run('DELETE FROM sessions WHERE id = ?', id);
 }
 
-export function setSessionCookie(res, session) {
-  res.cookie(SESSION_COOKIE, session.id, {
+/**
+ * Cookie attributes.
+ *
+ * The app is frequently embedded in a cross-site iframe (preview environments,
+ * partner portals). Browsers drop `SameSite=Lax` cookies in that context, which
+ * silently logs the user out on every reload. When the request arrives over
+ * HTTPS we therefore issue `SameSite=None; Secure`, which is the only
+ * combination that survives an iframe. Plain-HTTP local development keeps
+ * `Lax`, because `None` without `Secure` is rejected outright.
+ */
+function cookieOptions(req) {
+  const secure = Boolean(req?.secure) || process.env.COOKIE_SECURE === 'true';
+  return {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.COOKIE_SECURE === 'true',
-    expires: session.expiresAt,
+    sameSite: secure ? 'none' : 'lax',
+    secure,
     path: '/',
+  };
+}
+
+export function setSessionCookie(res, session, req) {
+  res.cookie(SESSION_COOKIE, session.id, {
+    ...cookieOptions(req),
+    expires: session.expiresAt,
   });
 }
 
-export function clearSessionCookie(res) {
-  res.clearCookie(SESSION_COOKIE, { path: '/' });
+export function clearSessionCookie(res, req) {
+  res.clearCookie(SESSION_COOKIE, cookieOptions(req));
 }
 
 export function serializeUser(row) {

@@ -71,8 +71,10 @@ admin-only), screenshot evidence, notifications, an audit history, 2 pending acc
 - Export filtered reports as **CSV, XLSX or PDF** from the dashboard, queue and reports page.
 
 ### Security model
-- Session cookie `entt_session` is `httpOnly` + `SameSite=Lax` (Bearer tokens are also accepted for
-  scripts and tests).
+- Session cookie `entt_session` is `httpOnly`, and `SameSite=None; Secure` whenever the request
+  arrives over HTTPS so sessions survive inside cross-site iframes (previews, partner portals);
+  plain-HTTP local development falls back to `SameSite=Lax`. Bearer tokens are also accepted for
+  scripts and tests, and the client keeps an in-memory token if storage is blocked or partitioned.
 - Passwords: `scrypt` with a per-user salt; password policy is 8+ characters with letters and digits.
 - Role and account status are **never** writable through the profile endpoint.
 - Changing a role or deactivating an account revokes that user's sessions immediately.
@@ -187,7 +189,8 @@ src/
 - **Exports**: CSV and XLSX generated natively (no external library), PDF via `pdfkit`.
 - **Charts**: `recharts`, lazy-loaded so the initial bundle stays ~225 kB.
 - **Frontend**: React 18 + TypeScript (strict) + Tailwind, dark mode, keyboard-accessible modals,
-  responsive sidebar, empty/loading/error states everywhere.
+  responsive sidebar, empty/loading/error states everywhere. Routes are code-split with a
+  retry-and-reload wrapper (`src/lib/lazy.ts`) so a stale chunk never leaves a blank page.
 
 ### Configuration
 | Variable | Default | Purpose |

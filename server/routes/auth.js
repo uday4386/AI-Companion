@@ -78,7 +78,7 @@ router.post('/login', (req, res) => {
   }
 
   const session = createSession(user.id, req.get('user-agent'));
-  setSessionCookie(res, session);
+  setSessionCookie(res, session, req);
   touchLogin(user.id);
   writeAudit({
     actorId: user.id,
@@ -105,7 +105,7 @@ router.post('/logout', (req, res) => {
     });
   }
   destroySession(token);
-  clearSessionCookie(res);
+  clearSessionCookie(res, req);
   res.json({ ok: true });
 });
 
@@ -324,7 +324,7 @@ router.post('/accept-invitation', (req, res) => {
   });
 
   const session = createSession(id, req.get('user-agent'));
-  setSessionCookie(res, session);
+  setSessionCookie(res, session, req);
   touchLogin(id);
   res.status(201).json({ user: serializeUser(findUserById(id)), settings: allSettings(), token: session.id });
 });

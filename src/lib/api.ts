@@ -1,21 +1,32 @@
 const TOKEN_KEY = 'entt_token';
 
+/**
+ * In-memory mirror of the session token.
+ *
+ * Embedded previews and strict privacy modes can block or partition
+ * `localStorage`. Falling back to memory keeps the session alive for the
+ * lifetime of the tab instead of silently signing the user out mid-session.
+ */
+let memoryToken: string | null = null;
+
 export const tokenStore = {
   get: (): string | null => {
     try {
-      return localStorage.getItem(TOKEN_KEY);
+      return localStorage.getItem(TOKEN_KEY) ?? memoryToken;
     } catch {
-      return null;
+      return memoryToken;
     }
   },
   set: (token: string) => {
+    memoryToken = token;
     try {
       localStorage.setItem(TOKEN_KEY, token);
     } catch {
-      /* storage unavailable */
+      /* storage unavailable — memory fallback keeps us signed in */
     }
   },
   clear: () => {
+    memoryToken = null;
     try {
       localStorage.removeItem(TOKEN_KEY);
     } catch {
