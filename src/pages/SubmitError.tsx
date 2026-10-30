@@ -189,6 +189,11 @@ export default function SubmitErrorPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Application" htmlFor="application" required error={fieldErrors.applicationId}>
+                  {!applications.length ? (
+                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11.5px] text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-200">
+                      No applications exist yet. An Admin must add one in Settings → Applications before reports can be filed.
+                    </p>
+                  ) : null}
                   <Select id="application" value={form.applicationId} onChange={set('applicationId')} invalid={Boolean(fieldErrors.applicationId)}>
                     <option value="">Select an application</option>
                     {applications.map((app) => (

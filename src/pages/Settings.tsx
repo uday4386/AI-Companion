@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { Tabs } from '@/components/ui/Tabs';
 import { Skeleton } from '@/components/ui/Spinner';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ProfileForm, SecurityForm } from '@/components/settings/ProfileForm';
 
 interface ApplicationsResponse {
@@ -352,6 +353,20 @@ function ApplicationsSettings() {
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-16 w-full" />
           ))}
+        </CardBody>
+      ) : !(data?.applications ?? []).length ? (
+        <CardBody>
+          <EmptyState
+            compact
+            icon={AppWindow}
+            title="No applications yet"
+            description="Add the systems your team reports errors against — a report must belong to one."
+            action={
+              <Button size="sm" onClick={openNew}>
+                <Plus className="h-3.5 w-3.5" /> Add application
+              </Button>
+            }
+          />
         </CardBody>
       ) : (
         <div className="divide-y divide-slate-100 dark:divide-white/[0.06]">

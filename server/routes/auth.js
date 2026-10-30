@@ -10,6 +10,7 @@ import {
   destroySession,
   serializeUser,
   findUserByEmail,
+  findUserByLogin,
   findUserById,
   touchLogin,
   requireAuth,
@@ -51,23 +52,25 @@ router.get('/me', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-  const email = String(req.body?.email || '').trim();
+  // `identifier` is the preferred key; `email` is accepted for older clients.
+  const identifier = String(req.body?.identifier ?? req.body?.email ?? '').trim();
   const password = String(req.body?.password || '');
-  if (!isEmail(email) || !password) {
-    return res.status(400).json({ error: 'Enter a valid email address and password.', code: 'VALIDATION' });
+  const looksLikeIdentifier = isEmail(identifier) || /^[A-Za-z0-9._-]{3,64}$/.test(identifier);
+  if (!looksLikeIdentifier || !password) {
+    return res.status(400).json({ error: 'Enter your email or username and password.', code: 'VALIDATION' });
   }
 
-  const user = findUserByEmail(email);
+  const user = findUserByLogin(identifier);
   if (!user || !verifyPassword(password, user.password_hash, user.password_salt)) {
     writeAudit({
       actorId: user?.id ?? null,
-      actorName: user?.full_name ?? email,
+      actorName: user?.full_name ?? identifier,
       action: 'auth.login_failed',
       entityType: 'profile',
       entityId: user?.id ?? null,
-      metadata: { email },
+      metadata: { identifier },
     });
-    return res.status(401).json({ error: 'Incorrect email or password.', code: 'INVALID_CREDENTIALS' });
+    return res.status(401).json({ error: 'Incorrect email, username or password.', code: 'INVALID_CREDENTIALS' });
   }
 
   if (user.account_status !== 'active') {

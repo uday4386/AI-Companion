@@ -12,7 +12,7 @@ assignment, role change and export is permission-checked on the server and writt
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000 — seeds the demo workspace on first start
+npm run dev          # http://localhost:3000 — creates the admin account on first start
 ```
 
 `npm run dev` serves the React app through Vite middleware and the API from the same Express
@@ -20,22 +20,42 @@ process, so there is one origin, one port and no proxy configuration.
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Express + Vite middleware, hot reload, auto-seed if the database is empty |
+| `npm run dev` | Express + Vite middleware, hot reload, creates the admin account if the database is empty |
 | `npm run build` | Production build into `dist/` |
 | `npm start` | Production server (`NODE_ENV=production`), serves `dist/` and the API |
-| `npm run seed` | Re-seed demo data (`npm run seed -- --force` wipes and rebuilds) |
+| `npm run seed` | Create the admin account if missing; `npm run seed -- --reset` wipes everything and recreates it |
 | `npm test` | HTTP-level API/permission test suite (`node:test`, no extra dependency) |
 | `npm run typecheck` | `tsc --noEmit` |
 
 Requirements: **Node 22.5+** (the app uses the built-in `node:sqlite` module — no native build step),
 no external database, no mail server, no cloud services.
 
-### Demo accounts
+### Sign in
 
-All seeded users share the password **`Passw0rd!`**.
+The application ships with **no demo data**. A fresh database contains one administrator account:
 
-| Email | Name | Role |
-| --- | --- | --- |
+| Field | Value |
+| --- | --- |
+| Username | `bbox5259` |
+| Email | `bbox5259@sentinel.local` |
+| Password | `Mxcoradm@5259` |
+
+The login form accepts either the **username** or the **email** (case-insensitive). Change the
+password from **Settings → Security** after the first sign-in; the bootstrap values are only used
+while the workspace has no accounts.
+
+Override them on first boot with `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_PASSWORD`,
+`BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_NAME`.
+
+**First-run checklist**
+
+1. Sign in as the administrator.
+2. **Settings → Applications** → *Add application* — a report must belong to an application, so this
+   has to exist before anyone can file one.
+3. **User management** → *Invite user* to create Team Member accounts (a one-time invitation link is
+   shown for you to share, since no mail transport is configured).
+
+--- | --- | --- |
 | `admin@entt.dev` | Ayesha Khan | Admin |
 | `marcus@entt.dev` | Marcus Feld | Admin |
 | `member@entt.dev` | Rahul Verma | Team Member |
@@ -170,10 +190,10 @@ server/
   access.js        record-level visibility + permission helpers
   notify.js        notification fan-out (assignee, admins, requester)
   app.js           express app factory: headers, rate limits, routers, SPA fallback, error handler
-  index.js         bootstrap: auto-seed, Vite middleware in dev, static dist in production
+  index.js         bootstrap: admin creation, Vite middleware in dev, static dist in production
   xlsx.js          dependency-free XLSX writer (zip + shared strings + sheet XML)
   routes/          auth, users, errors, applications, notifications, reports, audit
-  seed/            deterministic demo dataset + seeder
+  seed/            workspace bootstrap (creates the sole admin account, wipes on --reset)
   tests/           HTTP-level permission and workflow suite
 src/
   contexts/        theme, toast, auth (session + unread badge + workspace settings)
@@ -210,7 +230,7 @@ src/
 npm test
 ```
 
-21 tests run against a real Express instance and a throwaway database (no mocks), covering:
+30 tests run against a real Express instance and a throwaway database (no mocks), covering:
 
 - anonymous access is rejected everywhere; wrong passwords and inactive accounts cannot sign in;
 - the server derives submitter, initial status and error code (client-supplied values are ignored);
@@ -225,7 +245,10 @@ npm test
 - the last active Admin cannot be deactivated and Admins cannot deactivate themselves;
 - exports return valid CSV/XLSX/PDF and are audited;
 - settings changes are admin-only and take effect immediately;
-- password reset invalidates existing sessions.
+- password reset invalidates existing sessions;
+- the bootstrap workspace contains exactly one admin, no demo rows, and that admin signs in with
+  either the username or the email (case-insensitively);
+- `--reset` clears reports, applications and accounts and recreates only the admin.
 
 ---
 
@@ -236,4 +259,5 @@ npm test
   one-hour token **only outside production**; in production the response is deliberately generic.
 - Rate limiting is in-memory and per-process — fine for a single instance; use a shared store if the
   API is scaled horizontally.
-- The demo dataset is deterministic; `npm run seed -- --force` returns the workspace to a known state.
+- `npm run seed -- --reset` deletes every report, application, account and uploaded file, then
+  recreates just the administrator.

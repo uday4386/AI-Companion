@@ -69,8 +69,8 @@ router.get('/users', requireAuth, requireAdmin, (req, res) => {
     params.push(status);
   }
   if (search) {
-    where.push('(p.full_name LIKE ? OR p.email LIKE ?)');
-    params.push(`%${search}%`, `%${search}%`);
+    where.push('(p.full_name LIKE ? OR p.email LIKE ? OR p.username LIKE ?)');
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
 
   const rows = q.all(

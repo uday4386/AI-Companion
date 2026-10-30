@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   id              TEXT PRIMARY KEY,
   full_name       TEXT NOT NULL,
   email           TEXT NOT NULL UNIQUE COLLATE NOCASE,
+  username        TEXT COLLATE NOCASE,
   role            TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin','member')),
   account_status  TEXT NOT NULL DEFAULT 'active' CHECK (account_status IN ('active','inactive')),
   job_title       TEXT,
@@ -186,6 +187,22 @@ CREATE TABLE IF NOT EXISTS settings (
 `;
 
 db.exec(SCHEMA);
+
+/**
+ * Additive migrations for databases created before a column existed.
+ * `CREATE TABLE IF NOT EXISTS` never alters an existing table, so new columns
+ * are added here and must stay backwards compatible.
+ */
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((row) => row.name);
+  if (!columns.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+ensureColumn('profiles', 'username', 'TEXT COLLATE NOCASE');
+
+// Nullable + unique: most accounts sign in with their email, only some have a
+// short username. A partial index keeps that rule enforceable in SQLite.
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_username ON profiles(username) WHERE username IS NOT NULL');
 
 export const nowIso = () => new Date().toISOString();
 export const uid = () => crypto.randomUUID();

@@ -81,7 +81,12 @@ export default function UsersPage() {
   const filtered = useMemo(() => {
     const list = users.data?.users ?? [];
     return list.filter((row) => {
-      const matchesSearch = !search || row.fullName.toLowerCase().includes(search.toLowerCase()) || row.email.toLowerCase().includes(search.toLowerCase());
+      const needle = search.toLowerCase();
+      const matchesSearch =
+        !needle ||
+        row.fullName.toLowerCase().includes(needle) ||
+        row.email.toLowerCase().includes(needle) ||
+        (row.username ?? '').toLowerCase().includes(needle);
       const matchesRole = !roleFilter || row.role === roleFilter;
       return matchesSearch && matchesRole;
     });
@@ -284,7 +289,10 @@ export default function UsersPage() {
                                 {row.fullName}
                                 {isSelf ? <span className="rounded bg-slate-100 px-1 py-0.5 text-[9px] font-semibold uppercase text-slate-500 dark:bg-white/10 dark:text-slate-400">you</span> : null}
                               </p>
-                              <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">{row.email}</p>
+                              <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+                                {row.username ? <span className="font-mono text-slate-400 dark:text-slate-500">@{row.username} · </span> : null}
+                                {row.email}
+                              </p>
                               {row.jobTitle ? <p className="truncate text-[10.5px] text-slate-400">{row.jobTitle}</p> : null}
                             </div>
                           </div>

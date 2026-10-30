@@ -82,6 +82,7 @@ export function serializeUser(row) {
     id: row.id,
     fullName: row.full_name,
     email: row.email,
+    username: row.username ?? null,
     role: row.role,
     accountStatus: row.account_status,
     jobTitle: row.job_title,
@@ -98,6 +99,18 @@ export function findUserById(id) {
 
 export function findUserByEmail(email) {
   return q.get('SELECT * FROM profiles WHERE email = ?', String(email).trim());
+}
+
+/**
+ * Sign-in accepts either a full email address or a short username.
+ * `bbox5259` and `bbox5259@example.com` therefore resolve independently and
+ * an identifier can never match two different accounts.
+ */
+export function findUserByLogin(identifier) {
+  const value = String(identifier ?? '').trim();
+  if (!value) return null;
+  if (value.includes('@')) return findUserByEmail(value);
+  return q.get('SELECT * FROM profiles WHERE username = ?', value);
 }
 
 /* ------------------------------------------------------------------ */

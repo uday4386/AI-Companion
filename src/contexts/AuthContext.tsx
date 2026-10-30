@@ -9,7 +9,7 @@ interface AuthValue {
   loading: boolean;
   settings: Record<string, string>;
   visibility: string;
-  login: (email: string, password: string) => Promise<User>;
+  login: (identifier: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
   refreshUnread: () => Promise<void>;
@@ -75,9 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (identifier: string, password: string) => {
       const data = await api.post<{ user: User; token: string; settings: Record<string, string> }>('/api/auth/login', {
-        email,
+        identifier,
         password,
       });
       tokenStore.set(data.token);

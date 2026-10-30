@@ -17,6 +17,7 @@ export interface User {
   id: string;
   fullName: string;
   email: string;
+  username?: string | null;
   role: Role;
   accountStatus: AccountStatus;
   jobTitle: string | null;
